@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,10 @@
     <title>MomentVault - Your Moments, Forever</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div class="app-container" id="app">
-        
+
         <!-- ===================================
              Authentication Screen
              =================================== -->
@@ -18,16 +20,12 @@
                 <div class="auth-icon">🔐</div>
                 <h1>MomentVault</h1>
                 <p class="mb-2">Your precious moments, securely stored</p>
-                
+
                 <div id="authForm">
                     <div class="input-group">
                         <label for="passwordInput">Enter Password</label>
-                        <input 
-                            type="password" 
-                            id="passwordInput" 
-                            placeholder="Enter your password"
-                            autocomplete="current-password"
-                        >
+                        <input type="password" id="passwordInput" placeholder="Enter your password"
+                            autocomplete="current-password">
                     </div>
                     <button class="btn btn-primary" onclick="app.authenticate()" style="width: 100%;">
                         🔓 Unlock Vault
@@ -43,7 +41,7 @@
              Main Application
              =================================== -->
         <div class="hidden" id="mainApp">
-            
+
             <!-- Header -->
             <header class="app-header">
                 <div class="logo">
@@ -52,8 +50,17 @@
                 </div>
                 <div class="nav-actions">
                     <button class="btn btn-glass" onclick="app.showUploadModal()">
-                        ➕ Add Moment
+                        ➕ Add
                     </button>
+                    <button class="btn btn-glass" onclick="app.exportData()" title="Backup Data">
+                        💾
+                    </button>
+                    <button class="btn btn-glass" onclick="document.getElementById('importInput').click()"
+                        title="Restore Data">
+                        ♻️
+                    </button>
+                    <input type="file" id="importInput" accept=".json" style="display: none;"
+                        onchange="app.importData(event)">
                     <button class="btn btn-glass" onclick="app.logout()">
                         🔒 Lock
                     </button>
@@ -62,62 +69,57 @@
 
             <!-- Main Content -->
             <main class="main-content">
-                
+
                 <!-- Stats Section -->
                 <section class="glass-card mb-3">
                     <h2>Your Journey</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                    <div
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;">
                         <div class="text-center">
-                            <div style="font-size: 2rem; font-weight: 700; color: var(--accent);" id="totalMoments">0</div>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--accent);" id="totalMoments">0
+                            </div>
                             <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">Total Moments</div>
                         </div>
                         <div class="text-center">
-                            <div style="font-size: 2rem; font-weight: 700; color: var(--secondary);" id="totalPhotos">0</div>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--secondary);" id="totalPhotos">0
+                            </div>
                             <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">Photos</div>
                         </div>
                         <div class="text-center">
-                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-start);" id="totalVideos">0</div>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-start);"
+                                id="totalVideos">0</div>
                             <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">Videos</div>
                         </div>
                         <div class="text-center">
-                            <div style="font-size: 2rem; font-weight: 700; color: var(--success);" id="totalAudio">0</div>
-                            <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6);">Audio</div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Timeline Section -->
-                <section>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h2>Timeline</h2>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-glass" onclick="app.filterMoments('all')" id="filterAll">All</button>
-                            <button class="btn btn-glass" onclick="app.filterMoments('photo')" id="filterPhoto">📷</button>
-                            <button class="btn btn-glass" onclick="app.filterMoments('video')" id="filterVideo">🎥</button>
-                            <button class="btn btn-glass" onclick="app.filterMoments('audio')" id="filterAudio">🎤</button>
-                            <button class="btn btn-glass" onclick="app.filterMoments('text')" id="filterText">📝</button>
-                        </div>
-                    </div>
-                    
-                    <div class="timeline-container">
-                        <div class="moment-stack" id="momentStack">
-                            <!-- Moments will be dynamically inserted here -->
-                            <div class="glass-card text-center" style="padding: 3rem;">
-                                <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
-                                <h3>No moments yet</h3>
-                                <p style="margin-top: 0.5rem;">Start capturing your precious memories!</p>
-                                <button class="btn btn-primary mt-2" onclick="app.showUploadModal()">
-                                    ➕ Add Your First Moment
-                                </button>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--success);" id="totalAudio">0
+                                id="filterVideo">🎥</button>
+                                <button class="btn btn-glass" onclick="app.filterMoments('audio')"
+                                    id="filterAudio">🎤</button>
+                                <button class="btn btn-glass" onclick="app.filterMoments('text')"
+                                    id="filterText">📝</button>
                             </div>
                         </div>
-                    </div>
+
+                        <div class="timeline-container">
+                            <div class="moment-stack" id="momentStack">
+                                <!-- Moments will be dynamically inserted here -->
+                                <div class="glass-card text-center" style="padding: 3rem;">
+                                    <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+                                    <h3>No moments yet</h3>
+                                    <p style="margin-top: 0.5rem;">Start capturing your precious memories!</p>
+                                    <button class="btn btn-primary mt-2" onclick="app.showUploadModal()">
+                                        ➕ Add Your First Moment
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                 </section>
 
             </main>
 
             <!-- Time Travel Button -->
-            <button class="time-travel-btn" id="timeTravelBtn" onclick="app.toggleTimeTravel()" title="Time Travel - View moments from same date in different years">
+            <button class="time-travel-btn" id="timeTravelBtn" onclick="app.toggleTimeTravel()"
+                title="Time Travel - View moments from same date in different years">
                 🧳
             </button>
 
@@ -138,19 +140,22 @@
                     <label class="upload-card" for="photoUpload">
                         <div class="upload-icon">📷</div>
                         <div style="font-weight: 600;">Photo</div>
-                        <input type="file" id="photoUpload" accept="image/*" onchange="app.handleFileUpload(event, 'photo')">
+                        <input type="file" id="photoUpload" accept="image/*"
+                            onchange="app.handleFileUpload(event, 'photo')">
                     </label>
 
                     <label class="upload-card" for="videoUpload">
                         <div class="upload-icon">🎥</div>
                         <div style="font-weight: 600;">Video</div>
-                        <input type="file" id="videoUpload" accept="video/*" onchange="app.handleFileUpload(event, 'video')">
+                        <input type="file" id="videoUpload" accept="video/*"
+                            onchange="app.handleFileUpload(event, 'video')">
                     </label>
 
                     <label class="upload-card" for="audioUpload">
                         <div class="upload-icon">🎤</div>
                         <div style="font-weight: 600;">Audio</div>
-                        <input type="file" id="audioUpload" accept="audio/*" onchange="app.handleFileUpload(event, 'audio')">
+                        <input type="file" id="audioUpload" accept="audio/*"
+                            onchange="app.handleFileUpload(event, 'audio')">
                     </label>
 
                     <div class="upload-card" onclick="app.showTextEditor()">
@@ -167,12 +172,8 @@
                     </div>
                     <div class="input-group">
                         <label for="momentText">Your thoughts...</label>
-                        <textarea 
-                            id="momentText" 
-                            rows="6" 
-                            placeholder="Write about this moment..."
-                            style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: white; font-family: var(--font-primary); font-size: 1rem; resize: vertical;"
-                        ></textarea>
+                        <textarea id="momentText" rows="6" placeholder="Write about this moment..."
+                            style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: white; font-family: var(--font-primary); font-size: 1rem; resize: vertical;"></textarea>
                     </div>
                     <button class="btn btn-primary" onclick="app.saveTextMoment()">
                         💾 Save Moment
@@ -185,12 +186,8 @@
                     <div id="previewContent" style="margin: 1rem 0;"></div>
                     <div class="input-group">
                         <label for="uploadCaption">Add a caption (optional)</label>
-                        <textarea 
-                            id="uploadCaption" 
-                            rows="3" 
-                            placeholder="Describe this moment..."
-                            style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: white; font-family: var(--font-primary); font-size: 1rem; resize: vertical;"
-                        ></textarea>
+                        <textarea id="uploadCaption" rows="3" placeholder="Describe this moment..."
+                            style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: white; font-family: var(--font-primary); font-size: 1rem; resize: vertical;"></textarea>
                     </div>
                     <button class="btn btn-primary" onclick="app.saveMoment()">
                         💾 Save Moment
@@ -218,4 +215,5 @@
 
     <script src="app.js"></script>
 </body>
+
 </html>

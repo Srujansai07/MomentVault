@@ -16,39 +16,39 @@
   --accent: #fbbf24;
   --success: #10b981;
   --danger: #ef4444;
-  
+
   /* Background */
   --bg-dark: #0f0f23;
   --bg-darker: #080812;
   --bg-gradient: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
-  
+
   /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  
+
   /* Typography */
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-display: 'Playfair Display', serif;
-  
+
   /* Spacing */
   --spacing-xs: 0.5rem;
   --spacing-sm: 1rem;
   --spacing-md: 1.5rem;
   --spacing-lg: 2rem;
   --spacing-xl: 3rem;
-  
+
   /* Border Radius */
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-xl: 32px;
-  
+
   /* Transitions */
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
   --transition-slow: 0.5s ease;
-  
+
   /* Z-index layers */
   --z-base: 1;
   --z-card: 10;
@@ -76,41 +76,6 @@ body {
   color: #ffffff;
   min-height: 100vh;
   overflow-x: hidden;
-  line-height: 1.6;
-}
-
-/* ===================================
-   Typography
-   =================================== */
-h1, h2, h3 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-h1 {
-  font-size: 3rem;
-  background: linear-gradient(135deg, var(--primary-start), var(--primary-end), var(--secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: var(--spacing-md);
-}
-
-h2 {
-  font-size: 2rem;
-  color: #ffffff;
-  margin-bottom: var(--spacing-sm);
-}
-
-h3 {
-  font-size: 1.5rem;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-p {
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.7;
 }
 
 /* ===================================
@@ -229,8 +194,15 @@ p {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .input-group {
@@ -331,7 +303,7 @@ p {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
-/* Stack effect - cards appear layered */
+/* Stack effect - Snake Winding Layout */
 .moment-card:nth-child(1) {
   z-index: 10;
   opacity: 1;
@@ -340,34 +312,41 @@ p {
 
 .moment-card:nth-child(2) {
   z-index: 9;
-  opacity: 0.85;
-  transform: translateY(-20px) scale(0.97);
+  opacity: 0.9;
+  transform: translateY(-30px) translateX(20px) scale(0.98);
   margin-top: -80px;
 }
 
 .moment-card:nth-child(3) {
   z-index: 8;
-  opacity: 0.7;
-  transform: translateY(-40px) scale(0.94);
+  opacity: 0.8;
+  transform: translateY(-60px) translateX(-20px) scale(0.96);
   margin-top: -80px;
 }
 
 .moment-card:nth-child(4) {
   z-index: 7;
-  opacity: 0.55;
-  transform: translateY(-60px) scale(0.91);
+  opacity: 0.7;
+  transform: translateY(-90px) translateX(15px) scale(0.94);
   margin-top: -80px;
 }
 
-.moment-card:nth-child(n+5) {
+.moment-card:nth-child(5) {
   z-index: 6;
-  opacity: 0.4;
-  transform: translateY(-80px) scale(0.88);
+  opacity: 0.6;
+  transform: translateY(-120px) translateX(-15px) scale(0.92);
+  margin-top: -80px;
+}
+
+.moment-card:nth-child(n+6) {
+  z-index: 5;
+  opacity: 0.5;
+  transform: translateY(-150px) scale(0.9);
   margin-top: -80px;
 }
 
 .moment-card:hover {
-  transform: translateY(-8px) scale(1.02) !important;
+  transform: translateY(-20px) scale(1.02) !important;
   box-shadow: 0 20px 60px rgba(99, 102, 241, 0.4);
   border-color: rgba(255, 255, 255, 0.3);
   z-index: 100 !important;
@@ -512,9 +491,12 @@ p {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 8px 30px rgba(251, 191, 36, 0.5);
   }
+
   50% {
     box-shadow: 0 8px 40px rgba(251, 191, 36, 0.8);
   }
@@ -526,8 +508,13 @@ p {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ===================================
@@ -605,13 +592,29 @@ p {
   text-align: center;
 }
 
-.mt-1 { margin-top: var(--spacing-sm); }
-.mt-2 { margin-top: var(--spacing-md); }
-.mt-3 { margin-top: var(--spacing-lg); }
+.mt-1 {
+  margin-top: var(--spacing-sm);
+}
 
-.mb-1 { margin-bottom: var(--spacing-sm); }
-.mb-2 { margin-bottom: var(--spacing-md); }
-.mb-3 { margin-bottom: var(--spacing-lg); }
+.mt-2 {
+  margin-top: var(--spacing-md);
+}
+
+.mt-3 {
+  margin-top: var(--spacing-lg);
+}
+
+.mb-1 {
+  margin-bottom: var(--spacing-sm);
+}
+
+.mb-2 {
+  margin-bottom: var(--spacing-md);
+}
+
+.mb-3 {
+  margin-bottom: var(--spacing-lg);
+}
 
 /* ===================================
    Responsive Design
@@ -620,28 +623,28 @@ p {
   h1 {
     font-size: 2rem;
   }
-  
+
   h2 {
     font-size: 1.5rem;
   }
-  
+
   .main-content {
     padding: var(--spacing-md);
   }
-  
+
   .upload-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .moment-card {
     padding: var(--spacing-md);
   }
-  
+
   .app-header {
     flex-direction: column;
     gap: var(--spacing-sm);
   }
-  
+
   .time-travel-btn {
     width: 60px;
     height: 60px;

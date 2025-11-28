@@ -372,43 +372,6 @@ class MomentVault {
     }
 
     closeDetailModal() {
-        document.getElementById('detailModal').classList.remove('active');
-        this.currentMoment = null;
-    }
-
-    // ===================================
-    // Filtering
-    // ===================================
-    filterMoments(type) {
-        this.currentFilter = type;
-
-        // Update button states
-        ['filterAll', 'filterPhoto', 'filterVideo', 'filterAudio', 'filterText'].forEach(id => {
-            document.getElementById(id).style.background = 'var(--glass-bg)';
-        });
-
-        const activeBtn = type === 'all' ? 'filterAll' : `filter${type.charAt(0).toUpperCase() + type.slice(1)}`;
-        document.getElementById(activeBtn).style.background = 'rgba(99, 102, 241, 0.3)';
-
-        this.renderMoments();
-    }
-
-    // ===================================
-    // Time Travel
-    // ===================================
-    toggleTimeTravel() {
-        this.timeTravelMode = !this.timeTravelMode;
-        const btn = document.getElementById('timeTravelBtn');
-
-        if (this.timeTravelMode) {
-            btn.classList.add('time-travel-active');
-            this.showNotification('🧳 Time Travel activated! Showing moments from today across all years', 'success');
-        } else {
-            btn.classList.remove('time-travel-active');
-            this.showNotification('Returned to present timeline', 'success');
-        }
-
-        this.renderMoments();
     }
 
     // ===================================
@@ -441,6 +404,71 @@ class MomentVault {
         document.getElementById('photoUpload').value = '';
         document.getElementById('videoUpload').value = '';
         document.getElementById('audioUpload').value = '';
+    }
+
+    // ===================================
+    // Data Backup & Restore
+    // ===================================
+    exportData() {
+        const data = {
+            moments: this.moments,
+            version: '1.0',
+            exportDate: new Date().toISOString()
+        };
+
+        const dataStr = JSON.stringify(data, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+        const exportFileDefaultName = `MomentVault_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+
+        this.showNotification('Backup downloaded successfully! 💾', 'success');
+    }
+
+    importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (data.moments && Array.isArray(data.moments)) {
+                    if (confirm(`Found ${data.moments.length} moments in backup. This will merge with your current moments. Continue?`)) {
+                        // Merge logic: avoid duplicates by ID
+                        const currentIds = new Set(this.moments.map(m => m.id));
+                        let newCount = 0;
+
+                        data.moments.forEach(m => {
+                            if (!currentIds.has(m.id)) {
+                                this.moments.push(m);
+                                newCount++;
+                            }
+                        });
+
+                        // Sort by date (newest first)
+                        this.moments.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                        this.saveMomentsToStorage();
+                        this.renderMoments();
+                        this.updateStats();
+                        this.showNotification(`Restored ${newCount} new moments! ♻️`, 'success');
+                    }
+                } else {
+                    throw new Error('Invalid backup format');
+                }
+            } catch (err) {
+                console.error(err);
+                this.showNotification('Error importing backup file', 'error');
+            }
+            // Reset input
+            event.target.value = '';
+        };
+        reader.readAsText(file);
     }
 
     // ===================================
