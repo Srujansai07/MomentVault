@@ -2,8 +2,105 @@
 // MomentVault - Application Logic
 // ===================================
 
+// Supabase Configuration
+const SUPABASE_URL = 'https://rnmsrpqwligboxggnktq.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE'; // <--- PASTE YOUR KEY HERE
+
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+// ===================================
+// Storage Service (Local + Cloud)
+// ===================================
+class StorageService {
+    constructor() {
+        this.useCloud = !!supabase && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY_HERE';
+    }
+
+    async getMoments() {
+        let moments = [];
+
+        // 1. Try Local Storage first (fastest)
+        const localData = localStorage.getItem('mvMoments');
+        if (localData) {
+            moments = JSON.parse(localData);
+        }
+
+        // 2. If Cloud is enabled, fetch and sync
+        if (this.useCloud) {
+            try {
+                const { data, error } = await supabase
+                    .from('moments')
+                    .select('*')
+                    .order('date', { ascending: false });
+
+                if (error) throw error;
+
+                if (data) {
+                    // Merge strategy: Cloud wins or merge unique? 
+                    // For now, let's just use cloud data if available as the source of truth
+                    // but we might want to merge offline changes later.
+                    moments = data;
+                    // Update local cache
+                    localStorage.setItem('mvMoments', JSON.stringify(moments));
+                }
+            } catch (err) {
+                console.error('Error fetching from Supabase:', err);
+            }
+        }
+
+        return moments;
+    }
+
+    async saveMoment(moment) {
+        // 1. Save Locally
+        const localData = localStorage.getItem('mvMoments');
+        let moments = localData ? JSON.parse(localData) : [];
+        moments.unshift(moment);
+        localStorage.setItem('mvMoments', JSON.stringify(moments));
+
+        // 2. Save to Cloud
+        if (this.useCloud) {
+            try {
+                const { error } = await supabase
+                    .from('moments')
+                    .insert([moment]);
+
+                if (error) throw error;
+            } catch (err) {
+                console.error('Error saving to Supabase:', err);
+                // TODO: Add to offline sync queue
+            }
+        }
+    }
+
+    async deleteMoment(id) {
+        // 1. Delete Locally
+        const localData = localStorage.getItem('mvMoments');
+        if (localData) {
+            let moments = JSON.parse(localData);
+            moments = moments.filter(m => m.id !== id);
+            localStorage.setItem('mvMoments', JSON.stringify(moments));
+        }
+
+        // 2. Delete from Cloud
+        if (this.useCloud) {
+            try {
+                const { error } = await supabase
+                    .from('moments')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+            } catch (err) {
+                console.error('Error deleting from Supabase:', err);
+            }
+        }
+    }
+}
+
 class MomentVault {
     constructor() {
+        this.storage = new StorageService();
         this.moments = [];
         this.currentFilter = 'all';
         this.timeTravelMode = false;
@@ -83,20 +180,20 @@ class MomentVault {
     // ===================================
     // Moment Management
     // ===================================
-    loadMoments() {
-        const stored = localStorage.getItem('mvMoments');
-        if (stored) {
-            this.moments = JSON.parse(stored);
-        }
+    async loadMoments() {
+        this.moments = await this.storage.getMoments();
+        this.renderMoments();
+        this.updateStats();
     }
 
     saveMomentsToStorage() {
+        // Deprecated: handled by StorageService now, but kept for internal updates if needed
         localStorage.setItem('mvMoments', JSON.stringify(this.moments));
     }
 
-    createMoment(type, content, caption = '', title = '') {
+    async createMoment(type, content, caption = '', title = '') {
         const moment = {
-            id: Date.now() + Math.random(),
+            id: Date.now() + Math.random(), // Use UUID in production
             type: type,
             content: content,
             caption: caption,
@@ -105,23 +202,31 @@ class MomentVault {
             date: new Date().toISOString()
         };
 
-        this.moments.unshift(moment); // Add to beginning
-        this.saveMomentsToStorage();
+        // Optimistic UI update
+        this.moments.unshift(moment);
         this.renderMoments();
         this.updateStats();
         this.showNotification('Moment saved! ✨', 'success');
+
+        // Persist
+        await this.storage.saveMoment(moment);
     }
 
-    deleteMoment() {
+    async deleteMoment() {
         if (!this.currentMoment) return;
 
         if (confirm('Are you sure you want to delete this moment? This cannot be undone.')) {
-            this.moments = this.moments.filter(m => m.id !== this.currentMoment.id);
-            this.saveMomentsToStorage();
+            const idToDelete = this.currentMoment.id;
+
+            // Optimistic UI update
+            this.moments = this.moments.filter(m => m.id !== idToDelete);
             this.closeDetailModal();
             this.renderMoments();
             this.updateStats();
             this.showNotification('Moment deleted', 'success');
+
+            // Persist
+            await this.storage.deleteMoment(idToDelete);
         }
     }
 
