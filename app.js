@@ -14,15 +14,13 @@ class MomentVault {
         this.init();
     }
 
-    // ===================================
-    // Initialization
-    // ===================================
     init() {
         // Check if password exists
         const hasPassword = localStorage.getItem('mvPassword');
 
         // Load moments if authenticated
         this.loadMoments();
+        this.loadSettings();
 
         // Add enter key listener for password input
         const passwordInput = document.getElementById('passwordInput');
@@ -469,6 +467,65 @@ class MomentVault {
             event.target.value = '';
         };
         reader.readAsText(file);
+    }
+
+    // ===================================
+    // Settings & Context
+    // ===================================
+    loadSettings() {
+        const settings = localStorage.getItem('mvSettings');
+        if (settings) {
+            this.settings = JSON.parse(settings);
+            this.updateContextDisplay();
+        } else {
+            this.settings = { name: '', startDate: '' };
+        }
+    }
+
+    saveSettings() {
+        const name = document.getElementById('settingName').value;
+        const startDate = document.getElementById('settingStartDate').value;
+
+        this.settings = { name, startDate };
+        localStorage.setItem('mvSettings', JSON.stringify(this.settings));
+
+        this.updateContextDisplay();
+        this.closeSettingsModal();
+        this.showNotification('Settings saved! ⚙️', 'success');
+    }
+
+    updateContextDisplay() {
+        const section = document.getElementById('contextSection');
+
+        if (this.settings.name || this.settings.startDate) {
+            section.classList.remove('hidden');
+            document.getElementById('contextName').textContent = this.settings.name || 'My Journey';
+
+            if (this.settings.startDate) {
+                const start = new Date(this.settings.startDate);
+                const now = new Date();
+                const diffTime = Math.abs(now - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                document.getElementById('dayCounter').textContent = `Day ${diffDays}`;
+                document.getElementById('contextDate').textContent = `Started on ${start.toLocaleDateString()}`;
+            } else {
+                document.getElementById('dayCounter').textContent = '';
+                document.getElementById('contextDate').textContent = '';
+            }
+        } else {
+            section.classList.add('hidden');
+        }
+    }
+
+    showSettingsModal() {
+        document.getElementById('settingsModal').classList.add('active');
+        document.getElementById('settingName').value = this.settings.name || '';
+        document.getElementById('settingStartDate').value = this.settings.startDate || '';
+    }
+
+    closeSettingsModal() {
+        document.getElementById('settingsModal').classList.remove('active');
     }
 
     // ===================================
