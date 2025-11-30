@@ -13,7 +13,15 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-// Routes
+// Config endpoint - provides public config to frontend
+app.get('/api/config', (req, res) => {
+    res.json({
+        supabaseUrl: process.env.SUPABASE_URL,
+        supabaseAnonKey: process.env.SUPABASE_ANON_KEY, // This is safe to expose (it's the PUBLIC key)
+    });
+});
+
+// Health check
 app.get('/', (req, res) => {
     res.json({ message: 'MomentVault API is running! 🚀' });
 });
