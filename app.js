@@ -36,11 +36,7 @@ class StorageService {
                 if (error) throw error;
 
                 if (data) {
-                    // Merge strategy: Cloud wins or merge unique? 
-                    // For now, let's just use cloud data if available as the source of truth
-                    // but we might want to merge offline changes later.
                     moments = data;
-                    // Update local cache
                     localStorage.setItem('mvMoments', JSON.stringify(moments));
                 }
             } catch (err) {
@@ -68,7 +64,6 @@ class StorageService {
                 if (error) throw error;
             } catch (err) {
                 console.error('Error saving to Supabase:', err);
-                // TODO: Add to offline sync queue
             }
         }
     }
@@ -107,6 +102,7 @@ class MomentVault {
         this.currentMoment = null;
         this.pendingUpload = null;
         this.isAuthenticated = false;
+        this.quill = null;
 
         this.init();
     }
@@ -125,6 +121,24 @@ class MomentVault {
             passwordInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     this.authenticate();
+                }
+            });
+        }
+
+        // Initialize Quill
+        if (document.getElementById('editor-container')) {
+            this.quill = new Quill('#editor-container', {
+                theme: 'snow',
+                placeholder: 'Write about this moment...',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline', 'strike'],
+                        ['blockquote', 'code-block'],
+                        [{ 'header': 1 }, { 'header': 2 }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['clean']
+                    ]
                 }
             });
         }
@@ -298,14 +312,18 @@ class MomentVault {
 
     saveTextMoment() {
         const title = document.getElementById('momentTitle').value;
-        const text = document.getElementById('momentText').value;
+        const content = this.quill ? this.quill.root.innerHTML : '';
 
-        if (!text.trim()) {
+        if (!content || content === '<p><br></p>') {
             this.showNotification('Please write something!', 'error');
             return;
         }
 
-        this.createMoment('text', text, '', title);
+        this.createMoment('text', content, '', title);
+
+        // Reset
+        if (this.quill) this.quill.setText('');
+        document.getElementById('momentTitle').value = '';
         this.closeUploadModal();
     }
 
@@ -397,9 +415,10 @@ class MomentVault {
                 </div>
             `;
         } else if (moment.type === 'text') {
+            // Don't escape HTML for text type since it comes from Quill
             contentHtml = `
                 ${moment.title ? `<h3 style="margin-bottom: 0.5rem;">${this.escapeHtml(moment.title)}</h3>` : ''}
-                <div class="moment-text">${this.escapeHtml(moment.content).replace(/\n/g, '<br>')}</div>
+                <div class="moment-text">${moment.content}</div>
             `;
         }
 
@@ -458,7 +477,7 @@ class MomentVault {
         } else if (moment.type === 'text') {
             contentHtml = `
                 ${moment.title ? `<h2 style="margin-bottom: 1rem;">${this.escapeHtml(moment.title)}</h2>` : ''}
-                <div style="line-height: 1.8; font-size: 1.1rem;">${this.escapeHtml(moment.content).replace(/\n/g, '<br>')}</div>
+                <div style="line-height: 1.8; font-size: 1.1rem;">${moment.content}</div>
             `;
         }
 
@@ -475,6 +494,7 @@ class MomentVault {
     }
 
     closeDetailModal() {
+        document.getElementById('detailModal').classList.remove('active');
     }
 
     // ===================================
@@ -496,7 +516,7 @@ class MomentVault {
         document.getElementById('textEditor').classList.add('hidden');
         document.getElementById('uploadPreview').classList.add('hidden');
         document.getElementById('momentTitle').value = '';
-        document.getElementById('momentText').value = '';
+        if (this.quill) this.quill.setText('');
         document.getElementById('uploadCaption').value = '';
         this.pendingUpload = null;
     }
