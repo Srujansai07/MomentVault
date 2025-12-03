@@ -2,10 +2,11 @@
     "name": "momentvault-server",
     "version": "1.0.0",
     "description": "Backend for MomentVault",
-    "main": "src/index.js",
+    "main": "dist/index.js",
     "scripts": {
-        "start": "node src/index.js",
-        "dev": "nodemon src/index.js"
+        "start": "node dist/index.js",
+        "dev": "nodemon --exec ts-node src/index.ts",
+        "build": "tsc"
     },
     "keywords": [],
     "author": "",
@@ -19,6 +20,12 @@
         "morgan": "^1.10.0"
     },
     "devDependencies": {
-        "nodemon": "^3.0.1"
+        "@types/cors": "^2.8.17",
+        "@types/express": "^4.17.21",
+        "@types/morgan": "^1.9.9",
+        "@types/node": "^20.10.0",
+        "nodemon": "^3.0.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.3.3"
     }
 }
