@@ -7,6 +7,8 @@ export const metadata: Metadata = {
     description: "Capture and preserve your precious moments",
 };
 
+// Test deployment pipeline - auto-deploy working!
+
 export default function RootLayout({
     children,
 }: Readonly<{
