@@ -1,103 +1,61 @@
-# MomentVault 🏛️
+# MomentVault
 
-A beautiful, secure application for capturing and preserving your precious moments.
+A modern web application to capture, preserve, and cherish your precious moments.
 
-## 🚀 Tech Stack (PERN)
+## Tech Stack
 
-- **Frontend**: React + Vite + TailwindCSS (Deployed on Vercel)
-- **Backend**: Node.js + Express (Deployed on Railway)
-- **Database**: PostgreSQL via Supabase
-- **Storage**: Supabase Storage for media files
+- **Framework:** Next.js 15 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Database:** Supabase (PostgreSQL)
+- **Hosting:** Vercel
 
-## 📁 Project Structure
-
-```
-MomentVault/
-├── client/              # React frontend
-│   ├── src/
-│   │   ├── components/  # Reusable UI components
-│   │   ├── pages/       # Page components
-│   │   ├── services/    # API service layer
-│   │   └── App.jsx      # Main app component
-│   └── package.json
-├── server/              # Express backend
-│   ├── src/
-│   │   ├── controllers/ # Route handlers
-│   │   ├── routes/      # API routes
-│   │   └── index.js     # Server entry point
-│   └── package.json
-└── legacy_backup/       # Original vanilla JS implementation
-```
-
-## 🛠️ Setup Instructions
+## Getting Started
 
 ### Prerequisites
-- Node.js 18+ and npm
-- Supabase account
-- Vercel account (for frontend deployment)
-- Railway account (for backend deployment)
 
-### Local Development
+- Node.js 20+ and npm
 
-#### Client Setup
+### Installation
+
 ```bash
-cd client
 npm install
-npm run dev
-```
-
-#### Server Setup
-```bash
-cd server
-npm install
-npm run dev
 ```
 
 ### Environment Variables
 
-#### Client (.env)
-```
-VITE_API_URL=http://localhost:3000
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
+Create a `.env.local` file in the root directory:
 
-#### Server (.env)
-```
-PORT=3000
-SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_KEY=your_supabase_service_key
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-## 📦 Deployment
+### Development
 
-### Frontend (Vercel)
-1. Connect your GitHub repository to Vercel
-2. Set the root directory to `client`
-3. Add environment variables
-4. Deploy!
+```bash
+npm run dev
+```
 
-### Backend (Railway)
-1. Connect your GitHub repository to Railway
-2. Set the root directory to `server`
-3. Add environment variables
-4. Deploy!
+Open [http://localhost:3000](http://localhost:3000) to view the app.
 
-## ✨ Features
+### Build
 
-- 🔐 Secure password-protected vault
-- 📸 Photo, video, and audio moment capture
-- 📝 Rich text notes with formatting
-- 🎨 Beautiful glassmorphic UI design
-- 📱 Progressive Web App (PWA) support
-- ☁️ Cloud sync with Supabase
-- 🔄 Automatic backups
-- 🧳 Time Travel feature (view moments from same date in different years)
+```bash
+npm run build
+```
 
-## 📄 License
+## Deployment
+
+This app is configured for automatic deployment on Vercel.
+
+### Vercel Environment Variables
+
+Add these in your Vercel project settings:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+## License
 
 MIT
-
-## 👨‍💻 Author
-
-Srujansai07
