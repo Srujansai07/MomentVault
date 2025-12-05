@@ -1,211 +1,158 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authHelpers } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-
-interface Collection {
-    id: string;
-    name: string;
-    description: string;
-    is_private: boolean;
-    created_at: string;
-    moment_count: number;
-}
+import { useRouter } from "next/navigation";
+import Sidebar from "@/components/Sidebar";
 
 export default function CollectionsPage() {
-    const [collections, setCollections] = useState<Collection[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showModal, setShowModal] = useState(false);
-    const [newCollection, setNewCollection] = useState({ name: "", description: "", is_private: false });
+    const [collections, setCollections] = useState<any[]>([]);
+    const [newCollectionName, setNewCollectionName] = useState("");
+    const [isCreating, setIsCreating] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         fetchCollections();
     }, []);
 
     const fetchCollections = async () => {
-        try {
-            const { authHelpers } = await import("@/lib/supabase");
-            const user = await authHelpers.getCurrentUser();
-            if (!user) {
-                window.location.href = "/login";
-                return;
-            }
-
-            const { data, error } = await supabase
-                .from("collections")
-                .select(`
-          *,
-          collection_moments (count)
-        `)
-                .eq("user_id", user.id)
-                .order("created_at", { ascending: false });
-
-            if (error) throw error;
-
-            const transformedCollections = (data || []).map((col: any) => ({
-                ...col,
-                moment_count: col.collection_moments?.[0]?.count || 0,
-            }));
-
-            setCollections(transformedCollections);
-        } catch (error) {
-            console.error("Error fetching collections:", error);
-        } finally {
-            setLoading(false);
+        const user = await authHelpers.getCurrentUser();
+        if (!user) {
+            router.push("/login");
+            return;
         }
+
+        const { data, error } = await supabase
+            .from("collections")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false });
+
+        if (data) {
+            setCollections(data);
+        }
+        setLoading(false);
     };
 
-    const createCollection = async () => {
-        try {
-            const { authHelpers } = await import("@/lib/supabase");
-            const user = await authHelpers.getCurrentUser();
-            if (!user) return;
+    const handleCreateCollection = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newCollectionName.trim()) return;
 
-            const { error } = await supabase.from("collections").insert({
+        const user = await authHelpers.getCurrentUser();
+        if (!user) return;
+
+        const { data, error } = await supabase
+            .from("collections")
+            .insert({
+                name: newCollectionName,
                 user_id: user.id,
-                name: newCollection.name,
-                description: newCollection.description,
-                is_private: newCollection.is_private,
-            });
+            })
+            .select()
+            .single();
 
-            if (error) throw error;
-
-            setShowModal(false);
-            setNewCollection({ name: "", description: "", is_private: false });
-            fetchCollections();
-        } catch (error) {
-            console.error("Error creating collection:", error);
+        if (data) {
+            setCollections([data, ...collections]);
+            setNewCollectionName("");
+            setIsCreating(false);
         }
     };
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900 p-8">
-            <div className="max-w-7xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                        Collections
-                    </h1>
+        <div className="min-h-screen bg-[#0f0f23]">
+            <Sidebar />
+
+            <main className="ml-64 p-10">
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold mb-2">Collections</h1>
+                        <p className="text-gray-400">Organize your moments</p>
+                    </div>
                     <button
-                        onClick={() => setShowModal(true)}
-                        className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all hover:scale-105"
+                        onClick={() => setIsCreating(true)}
+                        className="btn-primary"
                     >
-                        Create Collection
+                        + New Collection
                     </button>
                 </div>
 
+                {/* Create Modal/Inline Form */}
+                {isCreating && (
+                    <div className="mb-8 card border-purple-500/50">
+                        <h3 className="text-lg font-bold mb-4">Create New Collection</h3>
+                        <form onSubmit={handleCreateCollection} className="flex gap-4">
+                            <input
+                                type="text"
+                                value={newCollectionName}
+                                onChange={(e) => setNewCollectionName(e.target.value)}
+                                placeholder="Collection Name (e.g., Summer 2024)"
+                                className="input-field flex-1"
+                                autoFocus
+                            />
+                            <button type="submit" className="btn-primary">
+                                Create
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setIsCreating(false)}
+                                className="btn-secondary"
+                            >
+                                Cancel
+                            </button>
+                        </form>
+                    </div>
+                )}
+
+                {/* Grid */}
                 {collections.length === 0 ? (
-                    <div className="text-center py-12">
-                        <p className="text-gray-600 dark:text-gray-400 mb-4">No collections yet</p>
+                    <div className="glass rounded-3xl p-16 text-center">
+                        <div className="text-6xl mb-6">📂</div>
+                        <h3 className="text-2xl font-bold mb-3">No collections yet</h3>
+                        <p className="text-gray-400 mb-8 max-w-md mx-auto">
+                            Create collections to organize your moments by events, places, or people.
+                        </p>
                         <button
-                            onClick={() => setShowModal(true)}
-                            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all hover:scale-105"
+                            onClick={() => setIsCreating(true)}
+                            className="btn-primary"
                         >
-                            Create Your First Collection
+                            Create Your First Collection →
                         </button>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {collections.map((collection) => (
-                            <div
-                                key={collection.id}
-                                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all hover:scale-105"
-                            >
-                                <div className="aspect-video bg-gradient-to-br from-purple-400 to-blue-400"></div>
-                                <div className="p-6">
-                                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                                        {collection.name}
-                                    </h3>
-                                    {collection.description && (
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                                            {collection.description}
-                                        </p>
-                                    )}
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-gray-500 dark:text-gray-500">
-                                            {collection.moment_count} moments
-                                        </span>
-                                        {collection.is_private && (
-                                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
-                                                Private
-                                            </span>
-                                        )}
-                                    </div>
+                            <div key={collection.id} className="card group hover:border-cyan-500/50 cursor-pointer">
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="text-4xl">📂</div>
+                                    <button className="text-gray-500 hover:text-red-400 transition-colors">
+                                        🗑️
+                                    </button>
+                                </div>
+                                <h3 className="font-bold text-xl mb-2 group-hover:text-cyan-400 transition-colors">
+                                    {collection.name}
+                                </h3>
+                                <p className="text-gray-400 text-sm mb-4">
+                                    {collection.description || "No description"}
+                                </p>
+                                <div className="flex items-center justify-between text-xs text-gray-500 border-t border-white/10 pt-4">
+                                    <span>Created {new Date(collection.created_at).toLocaleDateString()}</span>
+                                    <span className="bg-white/5 px-2 py-1 rounded">0 moments</span>
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
-
-                {/* Create Modal */}
-                {showModal && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                                Create Collection
-                            </h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Name *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newCollection.name}
-                                        onChange={(e) => setNewCollection({ ...newCollection, name: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
-                                        placeholder="My Collection"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Description
-                                    </label>
-                                    <textarea
-                                        value={newCollection.description}
-                                        onChange={(e) => setNewCollection({ ...newCollection, description: e.target.value })}
-                                        rows={3}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
-                                        placeholder="Describe your collection..."
-                                    />
-                                </div>
-                                <label className="flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        checked={newCollection.is_private}
-                                        onChange={(e) => setNewCollection({ ...newCollection, is_private: e.target.checked })}
-                                        className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                                    />
-                                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Make private</span>
-                                </label>
-                            </div>
-                            <div className="flex gap-4 mt-6">
-                                <button
-                                    onClick={createCollection}
-                                    disabled={!newCollection.name}
-                                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50"
-                                >
-                                    Create
-                                </button>
-                                <button
-                                    onClick={() => setShowModal(false)}
-                                    className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
+            </main>
         </div>
     );
 }

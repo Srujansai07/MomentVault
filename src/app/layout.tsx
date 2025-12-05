@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navigation from "@/components/Navigation";
 
 export const metadata: Metadata = {
     title: "MomentVault - Capture Your Precious Moments",
@@ -15,7 +14,6 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body>
-                <Navigation />
                 {children}
             </body>
         </html>

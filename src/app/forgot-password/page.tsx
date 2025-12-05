@@ -1,47 +1,73 @@
 "use client";
 
 import { useState } from "react";
+import { authHelpers } from "@/lib/supabase";
 import Link from "next/link";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
-    const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        setError("");
+        setMessage("");
 
-        // Placeholder - will integrate Supabase later
-        setTimeout(() => {
-            setLoading(false);
-            setSubmitted(true);
-        }, 1000);
+        const { error: resetError } = await authHelpers.resetPassword(email);
+
+        if (resetError) {
+            setError(resetError.message);
+        } else {
+            setMessage("Check your email for the password reset link");
+        }
+        setLoading(false);
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900 flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-                <h1 className="text-3xl font-bold text-center mb-2 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                    Reset Password
-                </h1>
-                <p className="text-center text-gray-600 dark:text-gray-400 mb-8">
-                    Enter your email to receive reset instructions
-                </p>
+        <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center p-6 relative overflow-hidden">
+            {/* Background effects */}
+            <div className="absolute top-20 left-20 w-96 h-96 bg-purple-500/20 rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-[120px]"></div>
 
-                {!submitted ? (
+            <div className="w-full max-w-md relative z-10">
+                {/* Logo */}
+                <Link href="/" className="block text-center mb-10">
+                    <span className="text-3xl font-bold text-gradient">MomentVault</span>
+                </Link>
+
+                {/* Card */}
+                <div className="glass rounded-3xl p-10">
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold mb-2">Reset Password</h1>
+                        <p className="text-gray-400">Enter your email to receive instructions</p>
+                    </div>
+
+                    {error && (
+                        <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 mb-6 text-red-400 text-center">
+                            {error}
+                        </div>
+                    )}
+
+                    {message && (
+                        <div className="bg-green-500/10 border border-green-500/50 rounded-xl p-4 mb-6 text-green-400 text-center">
+                            {message}
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
                                 Email Address
                             </label>
                             <input
                                 type="email"
-                                id="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                                placeholder="john@example.com"
+                                className="input-field"
+                                placeholder="you@example.com"
                                 required
                             />
                         </div>
@@ -49,29 +75,26 @@ export default function ForgotPasswordPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold transition-all ${loading ? "opacity-50 cursor-not-allowed" : "hover:shadow-lg hover:scale-105"
-                                }`}
+                            className="btn-primary w-full flex items-center justify-center gap-2"
                         >
-                            {loading ? "Sending..." : "Send Reset Link"}
+                            {loading ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    Sending...
+                                </>
+                            ) : (
+                                "Send Reset Link →"
+                            )}
                         </button>
                     </form>
-                ) : (
-                    <div className="text-center">
-                        <div className="mb-4 text-green-600 dark:text-green-400">
-                            ✓ Reset link sent!
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            Check your email for password reset instructions.
-                        </p>
-                    </div>
-                )}
 
-                <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-                    Remember your password?{" "}
-                    <Link href="/login" className="text-purple-600 hover:text-purple-700 font-medium">
-                        Sign in
-                    </Link>
-                </p>
+                    <div className="mt-8 text-center text-gray-400">
+                        Remember your password?{" "}
+                        <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+                            Sign in
+                        </Link>
+                    </div>
+                </div>
             </div>
         </div>
     );
