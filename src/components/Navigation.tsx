@@ -1,6 +1,26 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { authHelpers } from "@/lib/supabase";
 import Link from "next/link";
 
 export default function Navigation() {
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        checkUser();
+    }, []);
+
+    const checkUser = async () => {
+        const currentUser = await authHelpers.getCurrentUser();
+        setUser(currentUser);
+    };
+
+    const handleLogout = async () => {
+        await authHelpers.signOut();
+        window.location.href = "/";
+    };
+
     return (
         <nav className="bg-white dark:bg-gray-800 shadow-md">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -11,34 +31,61 @@ export default function Navigation() {
                                 MomentVault
                             </span>
                         </Link>
-                        <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                            <Link
-                                href="/dashboard"
-                                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-purple-600"
-                            >
-                                Dashboard
-                            </Link>
-                            <Link
-                                href="/moments"
-                                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-purple-600"
-                            >
-                                Moments
-                            </Link>
-                            <Link
-                                href="/collections"
-                                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-purple-600"
-                            >
-                                Collections
-                            </Link>
-                        </div>
+                        {user && (
+                            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                                <Link
+                                    href="/dashboard"
+                                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-purple-600"
+                                >
+                                    Dashboard
+                                </Link>
+                                <Link
+                                    href="/moments"
+                                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-purple-600"
+                                >
+                                    Moments
+                                </Link>
+                                <Link
+                                    href="/collections"
+                                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-purple-600"
+                                >
+                                    Collections
+                                </Link>
+                            </div>
+                        )}
                     </div>
-                    <div className="flex items-center">
-                        <Link
-                            href="/moments/create"
-                            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all text-sm"
-                        >
-                            Create
-                        </Link>
+                    <div className="flex items-center gap-4">
+                        {user ? (
+                            <>
+                                <Link
+                                    href="/moments/create"
+                                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all text-sm"
+                                >
+                                    Create
+                                </Link>
+                                <button
+                                    onClick={handleLogout}
+                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all text-sm"
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Link
+                                    href="/login"
+                                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-purple-600 font-semibold text-sm"
+                                >
+                                    Login
+                                </Link>
+                                <Link
+                                    href="/register"
+                                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all text-sm"
+                                >
+                                    Sign Up
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

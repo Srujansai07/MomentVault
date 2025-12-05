@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
-import React from "react";
 import "./globals.css";
+import Navigation from "@/components/Navigation";
 
 export const metadata: Metadata = {
-    title: "MomentVault",
-    description: "Capture and preserve your precious moments",
+    title: "MomentVault - Capture Your Precious Moments",
+    description: "A modern web application for capturing, organizing, and reliving your precious moments.",
 };
-
-// Test deployment pipeline - auto-deploy working!
 
 export default function RootLayout({
     children,
@@ -16,7 +14,10 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body>{children}</body>
+            <body>
+                <Navigation />
+                {children}
+            </body>
         </html>
     );
 }
