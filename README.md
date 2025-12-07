@@ -2,6 +2,12 @@
 
 A modern web application for capturing, organizing, and reliving your precious moments.
 
+## Features
+- **Modern UI:** Glassmorphism design, dark theme, and smooth animations.
+- **Secure Authentication:** Powered by Supabase Auth.
+- **Media Storage:** Store photos and videos securely.
+- **Collections:** Organize moments into collections.
+
 ## 🚀 Live Demo
 
 **Live Site:** [https://moment-vault-five.vercel.app](https://moment-vault-five.vercel.app)
