@@ -13,7 +13,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         const checkUser = async () => {
-            const { data: { user } } = await authHelpers.getUser();
+            const user = await authHelpers.getCurrentUser();
             if (!user) {
                 router.push("/login");
             } else {
