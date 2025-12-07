@@ -80,19 +80,19 @@ export default function CreateMomentPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0f0f23]">
+        <div className="min-h-screen bg-grid-pattern">
             <Sidebar />
 
-            <main className="ml-64 p-10">
+            <main className="ml-72 p-10">
                 <div className="max-w-2xl mx-auto">
                     <div className="mb-8">
-                        <h1 className="text-3xl font-bold mb-2">Create New Moment</h1>
+                        <h1 className="text-3xl font-bold mb-2 text-white">Create New Moment</h1>
                         <p className="text-gray-400">Capture and preserve your memories</p>
                     </div>
 
-                    <div className="card">
+                    <div className="glass-panel p-8 rounded-3xl border border-white/10">
                         {error && (
-                            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 mb-6 text-red-400 text-center">
+                            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6 text-red-400 text-center text-sm">
                                 {error}
                             </div>
                         )}
@@ -106,7 +106,7 @@ export default function CreateMomentPage() {
                                     type="text"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    className="input-field"
+                                    className="input-modern w-full"
                                     placeholder="e.g., Summer Vacation 2024"
                                     required
                                 />
@@ -119,7 +119,7 @@ export default function CreateMomentPage() {
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    className="input-field min-h-[120px]"
+                                    className="input-modern w-full min-h-[120px]"
                                     placeholder="Tell the story behind this moment..."
                                 />
                             </div>
@@ -128,7 +128,7 @@ export default function CreateMomentPage() {
                                 <label className="block text-sm font-medium text-gray-300 mb-2">
                                     Photos & Videos
                                 </label>
-                                <div className="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center hover:border-purple-500 transition-colors cursor-pointer relative">
+                                <div className="border-2 border-dashed border-white/10 rounded-xl p-8 text-center hover:border-indigo-500/50 hover:bg-white/5 transition-all cursor-pointer relative group">
                                     <input
                                         type="file"
                                         multiple
@@ -136,11 +136,13 @@ export default function CreateMomentPage() {
                                         onChange={handleFileChange}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                     />
-                                    <div className="text-4xl mb-3">☁️</div>
-                                    <p className="font-medium mb-1">Click to upload or drag and drop</p>
+                                    <div className="w-16 h-16 mx-auto bg-indigo-500/10 rounded-full flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform text-indigo-400">
+                                        ☁️
+                                    </div>
+                                    <p className="font-medium mb-1 text-white">Click to upload or drag and drop</p>
                                     <p className="text-sm text-gray-500">SVG, PNG, JPG or GIF (max. 10MB)</p>
                                     {files && (
-                                        <div className="mt-4 text-purple-400 font-medium">
+                                        <div className="mt-4 text-indigo-400 font-medium bg-indigo-500/10 py-2 px-4 rounded-lg inline-block">
                                             {files.length} file(s) selected
                                         </div>
                                     )}
@@ -151,7 +153,7 @@ export default function CreateMomentPage() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="btn-primary flex-1 flex items-center justify-center gap-2"
+                                    className="btn-premium flex-1 flex items-center justify-center gap-2 py-3.5"
                                 >
                                     {loading ? (
                                         <>
@@ -165,7 +167,7 @@ export default function CreateMomentPage() {
                                 <button
                                     type="button"
                                     onClick={() => router.back()}
-                                    className="btn-secondary px-8"
+                                    className="btn-ghost px-8 py-3.5"
                                 >
                                     Cancel
                                 </button>
