@@ -23,12 +23,31 @@ export default function RegisterPage() {
         if (error) {
             setError(error.message);
             setLoading(false);
-        } else if (data.user && !data.session) {
-            // User created but email confirmation required
-            setError("Account created! Please check your email to confirm your registration before logging in.");
+            return;
+        }
+
+        // Check if we have a session (Auto-confirm enabled)
+        if (data.session) {
+            window.location.href = "/dashboard";
+            return;
+        }
+
+        // If no session, try to sign in immediately (in case Auto-confirm is enabled but signUp didn't return session for some reason, or to catch the 'Email not confirmed' error explicitly)
+        const { data: signInData, error: signInError } = await authHelpers.signIn(email, password);
+
+        if (signInData.session) {
+            window.location.href = "/dashboard";
+        } else if (signInError) {
+            // If sign in fails, it's likely because email confirmation is still required
+            if (signInError.message.includes("Email not confirmed")) {
+                setError("Please check your email to confirm your registration.");
+            } else {
+                setError(signInError.message);
+            }
             setLoading(false);
         } else {
-            router.push("/dashboard");
+            // Fallback
+            router.push("/login");
         }
     };
 
