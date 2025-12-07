@@ -18,10 +18,14 @@ export default function RegisterPage() {
         setLoading(true);
         setError("");
 
-        const { error } = await authHelpers.signUp(email, password, fullName);
+        const { data, error } = await authHelpers.signUp(email, password, fullName);
 
         if (error) {
             setError(error.message);
+            setLoading(false);
+        } else if (data.user && !data.session) {
+            // User created but email confirmation required
+            setError("Account created! Please check your email to confirm your registration before logging in.");
             setLoading(false);
         } else {
             router.push("/dashboard");
