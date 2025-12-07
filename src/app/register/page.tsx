@@ -18,7 +18,7 @@ export default function RegisterPage() {
         setLoading(true);
         setError("");
 
-        const { error } = await authHelpers.signUp(email, password, { full_name: fullName });
+        const { error } = await authHelpers.signUp(email, password, fullName);
 
         if (error) {
             setError(error.message);
