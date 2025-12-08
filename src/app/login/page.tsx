@@ -33,12 +33,14 @@ export default function LoginPage() {
 
     const onSubmit = async (data: LoginFormData) => {
         setError("");
-        const { error } = await authHelpers.signIn(data.email, data.password);
+        const { data: signInData, error: signInError } = await authHelpers.signIn(data.email, data.password);
 
-        if (error) {
-            setError(error.message);
-        } else {
+        if (signInError) {
+            setError(signInError.message);
+        } else if (signInData?.session) {
             window.location.href = "/dashboard";
+        } else {
+            setError("Login failed. Please check your email confirmation or try again.");
         }
     };
 
