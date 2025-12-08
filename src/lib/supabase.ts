@@ -1,15 +1,16 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "./supabase/client";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Create a singleton client for use in client components
+const supabase = createClient();
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export { supabase };
 
 // Auth helper functions
 export const authHelpers = {
     // Sign up new user
     async signUp(email: string, password: string, fullName: string) {
-        const { data, error } = await supabase.auth.signUp({
+        const supabaseClient = createClient();
+        const { data, error } = await supabaseClient.auth.signUp({
             email,
             password,
             options: {
@@ -23,7 +24,8 @@ export const authHelpers = {
 
     // Sign in existing user
     async signIn(email: string, password: string) {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const supabaseClient = createClient();
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
             email,
             password,
         });
@@ -32,13 +34,15 @@ export const authHelpers = {
 
     // Sign out
     async signOut() {
-        const { error } = await supabase.auth.signOut();
+        const supabaseClient = createClient();
+        const { error } = await supabaseClient.auth.signOut();
         return { error };
     },
 
     // Reset password
     async resetPassword(email: string) {
-        const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        const supabaseClient = createClient();
+        const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/reset-password`,
         });
         return { data, error };
@@ -46,17 +50,19 @@ export const authHelpers = {
 
     // Get current user
     async getCurrentUser() {
+        const supabaseClient = createClient();
         const {
             data: { user },
-        } = await supabase.auth.getUser();
+        } = await supabaseClient.auth.getUser();
         return user;
     },
 
     // Get current session
     async getSession() {
+        const supabaseClient = createClient();
         const {
             data: { session },
-        } = await supabase.auth.getSession();
+        } = await supabaseClient.auth.getSession();
         return session;
     },
 };
