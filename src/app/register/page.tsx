@@ -1,52 +1,76 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { authHelpers } from "@/lib/supabase";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+const registerSchema = z.object({
+    fullName: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Please enter a valid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [fullName, setFullName] = useState("");
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
     const router = useRouter();
 
-    const handleRegister = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+    } = useForm<RegisterFormData>({
+        resolver: zodResolver(registerSchema),
+    });
+
+    const onSubmit = async (data: RegisterFormData) => {
         setError("");
+        setSuccess("");
 
-        const { data, error } = await authHelpers.signUp(email, password, fullName);
+        const { data: signUpData, error: signUpError } = await authHelpers.signUp(
+            data.email,
+            data.password,
+            data.fullName
+        );
 
-        if (error) {
-            setError(error.message);
-            setLoading(false);
+        if (signUpError) {
+            setError(signUpError.message);
             return;
         }
 
         // Check if we have a session (Auto-confirm enabled)
-        if (data.session) {
+        if (signUpData.session) {
             window.location.href = "/dashboard";
             return;
         }
 
-        // If no session, try to sign in immediately (in case Auto-confirm is enabled but signUp didn't return session for some reason, or to catch the 'Email not confirmed' error explicitly)
-        const { data: signInData, error: signInError } = await authHelpers.signIn(email, password);
+        // Try to sign in immediately
+        const { data: signInData, error: signInError } = await authHelpers.signIn(
+            data.email,
+            data.password
+        );
 
         if (signInData.session) {
             window.location.href = "/dashboard";
         } else if (signInError) {
-            // If sign in fails, it's likely because email confirmation is still required
             if (signInError.message.includes("Email not confirmed")) {
-                setError("Please check your email to confirm your registration.");
+                setSuccess("Account created! Please check your email to confirm your registration.");
             } else {
                 setError(signInError.message);
             }
-            setLoading(false);
         } else {
-            // Fallback
             router.push("/login");
         }
     };
@@ -58,69 +82,79 @@ export default function RegisterPage() {
                     <Link href="/" className="text-2xl font-bold tracking-tight inline-block mb-2">
                         MomentVault
                     </Link>
-                    <h1 className="text-xl font-medium text-[#A1A1AA]">Create your private vault</h1>
+                    <p className="text-[#A1A1AA]">Create your private vault</p>
                 </div>
 
-                <div className="card-minimal">
-                    {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-6 text-red-400 text-sm text-center">
-                            {error}
-                        </div>
-                    )}
+                <Card>
+                    <CardHeader className="space-y-1">
+                        <CardTitle className="text-xl">Get Started</CardTitle>
+                        <CardDescription>Create an account to preserve your memories</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {error && (
+                            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4 text-red-400 text-sm text-center">
+                                {error}
+                            </div>
+                        )}
+                        {success && (
+                            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 mb-4 text-green-400 text-sm text-center">
+                                {success}
+                            </div>
+                        )}
 
-                    <form onSubmit={handleRegister} className="space-y-5">
-                        <div>
-                            <label className="block text-sm font-medium text-[#A1A1AA] mb-2">
-                                Full Name
-                            </label>
-                            <input
-                                type="text"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                className="input-minimal"
-                                placeholder="John Doe"
-                                required
-                            />
-                        </div>
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="fullName">Full Name</Label>
+                                <Input
+                                    id="fullName"
+                                    type="text"
+                                    placeholder="John Doe"
+                                    {...register("fullName")}
+                                />
+                                {errors.fullName && (
+                                    <p className="text-sm text-red-400">{errors.fullName.message}</p>
+                                )}
+                            </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-[#A1A1AA] mb-2">
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="input-minimal"
-                                placeholder="you@example.com"
-                                required
-                            />
-                        </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="you@example.com"
+                                    {...register("email")}
+                                />
+                                {errors.email && (
+                                    <p className="text-sm text-red-400">{errors.email.message}</p>
+                                )}
+                            </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-[#A1A1AA] mb-2">
-                                Password
-                            </label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="input-minimal"
-                                placeholder="••••••••"
-                                required
-                                minLength={6}
-                            />
-                        </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="password">Password</Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    {...register("password")}
+                                />
+                                {errors.password && (
+                                    <p className="text-sm text-red-400">{errors.password.message}</p>
+                                )}
+                            </div>
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="btn-primary w-full flex items-center justify-center"
-                        >
-                            {loading ? "Creating Account..." : "Create Account"}
-                        </button>
-                    </form>
-                </div>
+                            <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Creating Account...
+                                    </>
+                                ) : (
+                                    "Create Account"
+                                )}
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
 
                 <p className="mt-8 text-center text-sm text-[#52525B]">
                     Already have an account?{" "}
